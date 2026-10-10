@@ -171,7 +171,7 @@ static noinline void search_manager(const char *path, int depth, struct list_hea
                           .data_path_list = &data_path_list,
                           .parent_dir = pos->dirpath,
                           .private_data = candidate_path,
-                          .depth = pos->depth};
+                          .depth = pos->depth };
 
         // destroy buffer on every iteration
         candidate_path[0] = 0;
@@ -205,11 +205,11 @@ static noinline void search_manager(const char *path, int depth, struct list_hea
         iterate_dir(file, &ctx.ctx);
         filp_close(file, NULL);
 
-        // ^ oh so thats the issue!
-        // we were calling is_manager_apk inside iterate_dir
-        // now we defer file opens after iterate_dir
-        // this way we dont open apks while inside that
-        if (!strstarts(candidate_path, "/data/ap") )
+        if (!candidate_path[0])
+            goto skip_iterate;
+
+        // Defer file opens after iterate_dir to prevent recursive lockups
+        if (!strstarts(candidate_path, "/data/ap"))
             goto skip_iterate;
 
         bool is_manager = is_manager_apk(candidate_path);
